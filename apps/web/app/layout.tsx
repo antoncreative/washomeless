@@ -11,6 +11,11 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'Washomeless — Help Rebuild Lives',
   description: 'Support people experiencing homelessness with $30/month. 100 donors fund one person\'s 12-month journey to stability.',
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/logo.png',
+  },
 }
 
 export default async function RootLayout({
