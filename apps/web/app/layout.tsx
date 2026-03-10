@@ -75,10 +75,10 @@ export default async function RootLayout({
               ) : (
                 <>
                   <Link href="/auth/login">
-                    <Button variant="outline" size="sm">Log in</Button>
+                    <Button variant="outline" size="sm" className="rounded-full px-5">Log in</Button>
                   </Link>
                   <Link href="/auth/signup">
-                    <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
+                    <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 rounded-full px-5">
                       Get started
                     </Button>
                   </Link>
