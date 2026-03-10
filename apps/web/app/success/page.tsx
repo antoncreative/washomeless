@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/server'
-import { stripe } from '@/lib/stripe'
+import { getStripe } from '@/lib/stripe'
 
 interface Props {
   searchParams: { session_id?: string }
@@ -12,7 +12,7 @@ export default async function SuccessPage({ searchParams }: Props) {
 
   if (searchParams.session_id) {
     try {
-      const session = await stripe.checkout.sessions.retrieve(searchParams.session_id)
+      const session = await getStripe().checkout.sessions.retrieve(searchParams.session_id)
       const personId = session.metadata?.person_id
 
       if (personId) {
