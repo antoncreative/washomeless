@@ -41,9 +41,9 @@ export default async function RootLayout({
       <body className={inter.className}>
         <nav className="border-b bg-white sticky top-0 z-50">
           <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <Image src="/logo.png" alt="Washomeless" width={36} height={36} className="rounded-full" />
-              <span className="text-xl font-bold text-emerald-700">Washomeless</span>
+            <Link href="/" className="flex items-center gap-3">
+              <Image src="/logo.png" alt="Washomeless" width={48} height={48} className="rounded-full" />
+              <span className="text-2xl font-bold text-emerald-700">Washomeless</span>
             </Link>
             <div className="flex items-center gap-4">
               <Link href="/people" className="text-sm text-gray-600 hover:text-gray-900">
