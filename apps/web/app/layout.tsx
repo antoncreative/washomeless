@@ -41,12 +41,12 @@ export default async function RootLayout({
       <body className={inter.className}>
         <nav className="border-b bg-white sticky top-0 z-50">
           <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-3">
-              <Image src="/logo.png" alt="Washomeless" width={48} height={48} className="rounded-full" />
-              <span className="text-2xl font-bold text-emerald-700">Washomeless</span>
+            <Link href="/" className="flex items-center gap-2">
+              <Image src="/logo.png" alt="Washomeless" width={42} height={42} className="rounded-full" />
+              <span className="text-xl sm:text-2xl font-bold text-emerald-700">Washomeless</span>
             </Link>
-            <div className="flex items-center gap-4">
-              <Link href="/people" className="text-sm text-gray-600 hover:text-gray-900">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <Link href="/people" className="hidden sm:block text-sm text-gray-600 hover:text-gray-900">
                 Browse
               </Link>
               {user ? (
@@ -67,7 +67,7 @@ export default async function RootLayout({
                     </Link>
                   )}
                   <form action="/auth/signout" method="post">
-                    <Button variant="outline" size="sm" type="submit">
+                    <Button variant="outline" size="sm" type="submit" className="rounded-full text-xs px-3 sm:px-5">
                       Sign out
                     </Button>
                   </form>
@@ -75,10 +75,10 @@ export default async function RootLayout({
               ) : (
                 <>
                   <Link href="/auth/login">
-                    <Button variant="outline" size="sm" className="rounded-full px-5">Log in</Button>
+                    <Button variant="outline" size="sm" className="rounded-full text-xs sm:text-sm px-3 sm:px-5">Log in</Button>
                   </Link>
                   <Link href="/auth/signup">
-                    <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 rounded-full px-5">
+                    <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 rounded-full text-xs sm:text-sm px-3 sm:px-5">
                       Get started
                     </Button>
                   </Link>
