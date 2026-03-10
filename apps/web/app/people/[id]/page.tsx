@@ -79,7 +79,7 @@ export default async function PersonProfilePage({ params }: Props) {
           {/* Story */}
           <div>
             <h2 className="text-lg font-semibold mb-3">My story</h2>
-            <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{person.story}</p>
+            <p className="text-gray-700 leading-relaxed">{person.story}</p>
           </div>
 
           {/* Milestones */}
