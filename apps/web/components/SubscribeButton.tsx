@@ -59,7 +59,7 @@ export default function SubscribeButton({ personId, isFull, isAuthenticated }: P
         disabled={loading}
         className="w-full bg-emerald-600 hover:bg-emerald-700 text-base py-6"
       >
-        {loading ? 'Redirecting to checkout…' : 'Support this person — $30/month'}
+        {loading ? 'Redirecting to checkout…' : 'Support this person — $30/mo'}
       </Button>
       {error && <p className="text-sm text-red-600 text-center">{error}</p>}
       <p className="text-xs text-gray-500 text-center">
