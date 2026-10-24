@@ -47,11 +47,11 @@ export default async function RootLayout({
             </Link>
             <div className="flex items-center gap-2 sm:gap-4">
               <Link href="/people" className="hidden sm:block text-sm text-gray-600 hover:text-gray-900">
-                Browse
+                Meet people
               </Link>
               {profile?.role !== 'admin' && profile?.role !== 'sponsored' && (
                 <Link href="/apply" className="hidden sm:block text-sm text-gray-600 hover:text-gray-900">
-                  Apply
+                  Apply for help
                 </Link>
               )}
               {user ? (
@@ -79,12 +79,12 @@ export default async function RootLayout({
                 </>
               ) : (
                 <>
-                  <Link href="/auth/login">
-                    <Button variant="outline" size="sm" className="rounded-full text-xs sm:text-sm px-3 sm:px-5">Log in</Button>
+                  <Link href="/auth/login" className="text-sm text-gray-600 hover:text-gray-900">
+                    Log in
                   </Link>
-                  <Link href="/auth/signup">
+                  <Link href="/people">
                     <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 rounded-full text-xs sm:text-sm px-3 sm:px-5">
-                      Get started
+                      Support someone
                     </Button>
                   </Link>
                 </>
