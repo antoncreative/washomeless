@@ -49,6 +49,11 @@ export default async function RootLayout({
               <Link href="/people" className="hidden sm:block text-sm text-gray-600 hover:text-gray-900">
                 Browse
               </Link>
+              {profile?.role !== 'admin' && profile?.role !== 'sponsored' && (
+                <Link href="/apply" className="hidden sm:block text-sm text-gray-600 hover:text-gray-900">
+                  Apply
+                </Link>
+              )}
               {user ? (
                 <>
                   {profile?.role === 'sponsored' && (

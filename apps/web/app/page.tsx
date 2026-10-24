@@ -104,7 +104,7 @@ export default async function HomePage() {
                   Meet the people <ArrowRight className="ml-1 h-4 w-4" />
                 </Button>
               </Link>
-              <Link href="/auth/signup">
+              <Link href="/apply">
                 <Button size="lg" variant="outline" className="w-full sm:w-auto rounded-full border-white/40 bg-transparent text-white hover:bg-white/10 hover:text-white text-base px-8 h-12">
                   Apply for support
                 </Button>
