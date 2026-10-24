@@ -1,7 +1,11 @@
 # Washomeless iOS app (demo build)
 
-Expo / React Native app. Runs entirely on example data in `src/data.ts`, so it
-works offline on stage — no Supabase or Stripe needed for the demo.
+Expo / React Native app. Reads live people and updates (text, photo, voice) from the
+same Supabase project as washomeless.com, refreshing every 15 seconds. If it's offline
+or no one is approved yet, it falls back to the example profiles in `src/data.ts`.
+"Join the circle" checkout is still demo-only (no real payment).
+
+Setup: copy `.env.example` to `.env.local` and fill in the Supabase URL and anon key.
 
 ## Run it
 
@@ -24,7 +28,7 @@ and scan the QR code with the Camera app (phone and laptop on the same Wi-Fi).
 
 ## Next steps after the event
 
-- Connect to the same Supabase project as the web app (auth, people, updates)
+- Log in from the app (donors and sponsored people)
 - Real payments via Stripe (Apple Pay) using the web app's checkout API
 - Push notifications for milestones (`expo-notifications`)
 - Ship to TestFlight / App Store with EAS: `npx eas-cli@latest build -p ios`
