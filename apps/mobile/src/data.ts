@@ -1,13 +1,22 @@
-// Example profiles for the demo build — these are not real people.
+// Example profiles — these are not real people. Shown when the live database
+// has no approved people yet, or when the phone is offline.
 // Mirrors apps/web/lib/demo-data.ts so the app and site tell the same story.
 
 export type Milestone = { title: string; description: string; completed: boolean; when?: string }
-export type Update = { kind: 'text' | 'photo' | 'voice'; title: string; content: string; when: string }
+export type Update = {
+  kind: 'text' | 'photo' | 'voice'
+  title: string
+  content: string
+  when: string
+  imageUrl?: string | null
+  audioUrl?: string | null
+}
 
 export type Person = {
   id: string
+  isExample: boolean
   name: string
-  age: number
+  age?: number
   neighbourhood: string
   headline: string
   story: string
@@ -34,6 +43,7 @@ function milestones(done: number): Milestone[] {
 export const people: Person[] = [
   {
     id: 'marcus',
+    isExample: true,
     name: 'Marcus T.',
     age: 41,
     neighbourhood: 'Moss Park',
@@ -50,6 +60,7 @@ export const people: Person[] = [
   },
   {
     id: 'amina',
+    isExample: true,
     name: 'Amina K.',
     age: 34,
     neighbourhood: 'Scarborough',
@@ -65,6 +76,7 @@ export const people: Person[] = [
   },
   {
     id: 'daniel',
+    isExample: true,
     name: 'Daniel R.',
     age: 22,
     neighbourhood: 'Parkdale',
@@ -80,6 +92,7 @@ export const people: Person[] = [
   },
   {
     id: 'linda',
+    isExample: true,
     name: 'Linda P.',
     age: 58,
     neighbourhood: 'Downtown East',

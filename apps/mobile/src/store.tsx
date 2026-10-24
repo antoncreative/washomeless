@@ -1,19 +1,29 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
-import { people as seedPeople, type Person } from './data'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { AppState } from 'react-native'
+import { people as examplePeople, type Person } from './data'
+import { fetchLive, type LiveData } from './live'
 
 export type Activity = { id: string; icon: string; title: string; body: string; when: string; personId?: string }
 
-const seedActivity: Activity[] = [
+const REFRESH_MS = 15_000
+
+const exampleActivity: Activity[] = [
   { id: 'a1', icon: '🎉', title: 'Milestone reached', body: 'Marcus landed a trial shift at a bistro on Queen East.', when: '2d', personId: 'marcus' },
   { id: 'a2', icon: '📘', title: 'New diary update', body: 'Amina was accepted into the pharmacy technician bridging program.', when: '5d', personId: 'amina' },
   { id: 'a3', icon: '⚡️', title: 'New diary update', body: 'Daniel finished his first week of the electrician pre-apprenticeship.', when: '1d', personId: 'daniel' },
   { id: 'a4', icon: '💚', title: 'Circle complete', body: 'Linda’s circle reached 100 supporters. Fully funded!', when: '1w', personId: 'linda' },
 ]
 
+const kindIcon = { text: '📘', photo: '📸', voice: '🎙' }
+const kindTitle = { text: 'New diary update', photo: 'New photo', voice: 'New voice note' }
+
 type Store = {
   people: Person[]
+  isLive: boolean
+  refreshing: boolean
   supporting: string[]
   activity: Activity[]
+  refresh: () => Promise<void>
   support: (id: string) => void
   isSupporting: (id: string) => boolean
 }
@@ -21,25 +31,74 @@ type Store = {
 const StoreContext = createContext<Store | null>(null)
 
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [people, setPeople] = useState(seedPeople)
+  const [live, setLive] = useState<LiveData | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
   const [supporting, setSupporting] = useState<string[]>([])
-  const [activity, setActivity] = useState(seedActivity)
+  const [joined, setJoined] = useState<Activity[]>([])
 
-  const support = useCallback((id: string) => {
-    setSupporting((s) => (s.includes(id) ? s : [...s, id]))
-    setPeople((ps) => ps.map((p) => (p.id === id ? { ...p, supporters: Math.min(100, p.supporters + 1) } : p)))
-    const person = seedPeople.find((p) => p.id === id)
-    if (person) {
-      setActivity((a) => [
-        { id: `join-${id}-${Date.now()}`, icon: '🤝', title: 'You joined a circle', body: `You’re now one of ${person.name.split(' ')[0]}’s supporters. Welcome!`, when: 'now', personId: id },
-        ...a,
-      ])
+  const refresh = useCallback(async () => {
+    setRefreshing(true)
+    try {
+      setLive(await fetchLive())
+    } catch {
+      // Offline or not configured — keep showing whatever we had (or the examples).
+    } finally {
+      setRefreshing(false)
     }
   }, [])
 
+  // Load on start, every few seconds, and whenever the app comes back to the foreground.
+  useEffect(() => {
+    refresh()
+    const timer = setInterval(refresh, REFRESH_MS)
+    const sub = AppState.addEventListener('change', (state) => state === 'active' && refresh())
+    return () => {
+      clearInterval(timer)
+      sub.remove()
+    }
+  }, [refresh])
+
+  const isLive = !!live && live.people.length > 0
+  const basePeople = isLive ? live.people : examplePeople
+
+  // Joining a circle is still a demo action: bump the count locally.
+  const people = useMemo(
+    () => basePeople.map((p) => (supporting.includes(p.id) ? { ...p, supporters: Math.min(100, p.supporters + 1) } : p)),
+    [basePeople, supporting]
+  )
+
+  const activity = useMemo<Activity[]>(() => {
+    if (!isLive) return [...joined, ...exampleActivity]
+    const names = new Map(live.people.map((p) => [p.id, p.name.split(' ')[0]]))
+    const fromUpdates = live.latest.map((u) => ({
+      id: u.id,
+      icon: kindIcon[u.kind],
+      title: kindTitle[u.kind],
+      body: `${names.get(u.personId)}: ${u.title}`,
+      when: u.when,
+      personId: u.personId,
+    }))
+    return [...joined, ...fromUpdates]
+  }, [isLive, live, joined])
+
+  const support = useCallback(
+    (id: string) => {
+      if (supporting.includes(id)) return
+      setSupporting((s) => [...s, id])
+      const person = basePeople.find((p) => p.id === id)
+      if (person) {
+        setJoined((a) => [
+          { id: `join-${id}-${Date.now()}`, icon: '🤝', title: 'You joined a circle', body: `You’re now one of ${person.name.split(' ')[0]}’s supporters. Welcome!`, when: 'now', personId: id },
+          ...a,
+        ])
+      }
+    },
+    [supporting, basePeople]
+  )
+
   const value = useMemo(
-    () => ({ people, supporting, activity, support, isSupporting: (id: string) => supporting.includes(id) }),
-    [people, supporting, activity, support]
+    () => ({ people, isLive, refreshing, supporting, activity, refresh, support, isSupporting: (id: string) => supporting.includes(id) }),
+    [people, isLive, refreshing, supporting, activity, refresh, support]
   )
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>

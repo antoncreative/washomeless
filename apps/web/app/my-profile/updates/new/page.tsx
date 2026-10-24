@@ -30,7 +30,8 @@ const defaultTitles: Record<Kind, string> = {
 
 function pickAudioMimeType() {
   if (typeof MediaRecorder === 'undefined') return ''
-  for (const type of ['audio/webm', 'audio/mp4', 'audio/ogg']) {
+  // AAC in MP4 first: it plays everywhere, including the iOS app. WebM is a last resort.
+  for (const type of ['audio/mp4;codecs=mp4a.40.2', 'audio/mp4', 'audio/webm', 'audio/ogg']) {
     if (MediaRecorder.isTypeSupported(type)) return type
   }
   return ''
@@ -120,7 +121,7 @@ export default function NewUpdatePage() {
     const path = `${userId}/${Date.now()}.${ext}`
     const { error: uploadError } = await supabase.storage
       .from('diary-media')
-      .upload(path, file, { contentType: file.type })
+      .upload(path, file, { contentType: file.type.split(';')[0] })
     if (uploadError) throw uploadError
     return supabase.storage.from('diary-media').getPublicUrl(path).data.publicUrl
   }

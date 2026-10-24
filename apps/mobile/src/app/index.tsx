@@ -3,9 +3,12 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
 import * as Haptics from 'expo-haptics'
+import { useStore } from '@/store'
 
 // Welcome screen — the first thing the audience sees.
 export default function Welcome() {
+  const { isLive } = useStore()
+
   return (
     <LinearGradient colors={['#022c22', '#065f46', '#0f766e']} style={{ flex: 1 }}>
       <SafeAreaView style={styles.safe}>
@@ -44,7 +47,7 @@ export default function Welcome() {
           >
             <Text style={styles.ctaText}>Get started</Text>
           </Pressable>
-          <Text style={styles.note}>Demo build · example profiles</Text>
+          <Text style={styles.note}>{isLive ? '● Live from washomeless.com' : 'Demo · example profiles'}</Text>
         </View>
       </SafeAreaView>
     </LinearGradient>

@@ -32,7 +32,9 @@
           "imageWidth": 160
         }
       ],
-      "expo-font"
+      "expo-font",
+      "expo-audio",
+      "expo-asset"
     ],
     "scheme": "washomeless",
     "experiments": {

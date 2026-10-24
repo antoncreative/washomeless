@@ -6,7 +6,8 @@ import Ionicons from '@expo/vector-icons/Ionicons'
 import { useStore } from '@/store'
 import { colors } from '@/theme'
 import { MAX_SUPPORTERS, UPDATES_PER_WEEK } from '@/data'
-import { Avatar, Card, DonorDots, ExampleTag, SectionTitle, VoiceNote } from '@/components/ui'
+import { Avatar, Card, DonorDots, ExampleTag, SectionTitle } from '@/components/ui'
+import { UpdateMedia } from '@/components/media'
 
 export default function PersonScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -25,8 +26,8 @@ export default function PersonScreen() {
           <SafeAreaView edges={['top']} style={{ alignItems: 'center', paddingTop: 40 }}>
             <Avatar person={person} size={96} />
             <Text style={styles.name}>{person.name}</Text>
-            <Text style={styles.meta}>{person.age} · {person.neighbourhood}, Toronto</Text>
-            <View style={{ marginTop: 8 }}><ExampleTag /></View>
+            <Text style={styles.meta}>{person.age ? `${person.age} · ` : ''}{person.neighbourhood}, Toronto</Text>
+            {person.isExample && <View style={{ marginTop: 8 }}><ExampleTag /></View>}
           </SafeAreaView>
         </LinearGradient>
 
@@ -65,17 +66,18 @@ export default function PersonScreen() {
           </Card>
 
           <SectionTitle>Diary · posts {UPDATES_PER_WEEK}× a week</SectionTitle>
-          {person.updates.map((u) => (
-            <Card key={u.title} style={{ gap: 8 }}>
+          {person.updates.length === 0 && <Text style={styles.meta}>No updates yet.</Text>}
+          {person.updates.map((u, i) => (
+            <Card key={`${u.title}-${i}`} style={{ gap: 8 }}>
               <View style={styles.between}>
                 <Text style={styles.stepTitle}>{u.title}</Text>
                 <Text style={styles.meta}>{u.when}</Text>
               </View>
-              {u.kind === 'voice' && <VoiceNote />}
-              <Text style={styles.story}>
-                {u.kind === 'voice' && <Text style={styles.meta}>Transcript: </Text>}
+              <UpdateMedia kind={u.kind} imageUrl={u.imageUrl} audioUrl={u.audioUrl} />
+              {!!u.content && <Text style={styles.story}>
+                {u.kind === 'voice' && !u.audioUrl && <Text style={styles.meta}>Transcript: </Text>}
                 {u.content}
-              </Text>
+              </Text>}
             </Card>
           ))}
         </View>

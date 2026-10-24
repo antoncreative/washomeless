@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Link } from 'expo-router'
 import { useStore } from '@/store'
@@ -7,14 +7,22 @@ import { MAX_SUPPORTERS, budget } from '@/data'
 import { Avatar, Card, ExampleTag, ProgressBar, SectionTitle } from '@/components/ui'
 
 export default function Discover() {
-  const { people } = useStore()
+  const { people, isLive, refreshing, refresh } = useStore()
   const open = people.filter((p) => p.supporters < MAX_SUPPORTERS)
   const totalDonors = people.reduce((sum, p) => sum + p.supporters, 0)
 
   return (
     <SafeAreaView edges={['top']} style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.hello}>Good morning 👋</Text>
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={colors.primary} />}
+      >
+        <View style={styles.topRow}>
+          <Text style={styles.hello}>Good morning 👋</Text>
+          <Text style={[styles.status, isLive ? styles.live : styles.offline]}>
+            {isLive ? '● Live' : 'Examples'}
+          </Text>
+        </View>
         <Text style={styles.h1}>Who will you{'\n'}help rebuild?</Text>
 
         <Card style={styles.impact}>
@@ -38,7 +46,7 @@ export default function Discover() {
                   <View style={styles.row}>
                     <Avatar person={p} size={52} />
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.name}>{p.name}, {p.age}</Text>
+                      <Text style={styles.name}>{p.name}{p.age ? `, ${p.age}` : ''}</Text>
                       <Text style={styles.meta}>{p.neighbourhood}</Text>
                     </View>
                     <Text style={[styles.badge, full && styles.badgeFull]}>
@@ -48,7 +56,7 @@ export default function Discover() {
                   <Text style={styles.headline}>{p.headline}</Text>
                   <ProgressBar value={p.supporters} />
                   <View style={[styles.row, { marginTop: 8, justifyContent: 'space-between' }]}>
-                    <ExampleTag />
+                    {p.isExample ? <ExampleTag /> : <Text style={styles.meta}>{p.updates.length} {p.updates.length === 1 ? 'update' : 'updates'}</Text>}
                     <Text style={styles.meta}>{p.supporters}/100 supporters</Text>
                   </View>
                 </Card>
@@ -79,6 +87,10 @@ export default function Discover() {
 
 const styles = StyleSheet.create({
   scroll: { padding: 20, paddingBottom: 40, gap: 14 },
+  topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  status: { fontSize: 12, fontWeight: '700', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 99, overflow: 'hidden' },
+  live: { color: colors.primary, backgroundColor: colors.primarySoft },
+  offline: { color: colors.amber, backgroundColor: colors.amberSoft },
   hello: { color: colors.muted, fontSize: 15 },
   h1: { fontSize: 32, fontWeight: '800', color: colors.text, letterSpacing: -0.8, lineHeight: 36, marginBottom: 4 },
   impact: { flexDirection: 'row', backgroundColor: colors.primaryDark, marginBottom: 8 },
