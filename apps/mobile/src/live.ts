@@ -92,6 +92,7 @@ export async function fetchLive(): Promise<LiveData> {
     when: timeAgo(u.created_at),
     imageUrl: u.image_url,
     audioUrl: u.audio_url,
+    createdAt: u.created_at,
   })
 
   const people: Person[] = rows.map((p) => ({

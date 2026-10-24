@@ -10,6 +10,7 @@ export type Update = {
   when: string
   imageUrl?: string | null
   audioUrl?: string | null
+  createdAt?: string
 }
 
 export type Person = {

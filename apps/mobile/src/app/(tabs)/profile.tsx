@@ -1,7 +1,9 @@
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Ionicons from '@expo/vector-icons/Ionicons'
+import { router } from 'expo-router'
 import { useStore } from '@/store'
+import { useAuth } from '@/auth'
 import { colors } from '@/theme'
 import { Card } from '@/components/ui'
 import { WEBSITE_URL } from '@/data'
@@ -15,6 +17,9 @@ const rows: { icon: React.ComponentProps<typeof Ionicons>['name']; label: string
 
 export default function Profile() {
   const { supporting } = useStore()
+  const { session, role, person, signOut } = useAuth()
+  const email = session?.user.email
+  const roleLabel = role === 'sponsored' ? 'In the program' : role === 'admin' ? 'Admin' : 'Supporter'
 
   return (
     <SafeAreaView edges={['top']} style={{ flex: 1 }}>
@@ -22,12 +27,29 @@ export default function Profile() {
         <Text style={styles.h1}>Profile</Text>
 
         <Card style={styles.me}>
-          <View style={styles.avatar}><Text style={styles.avatarText}>Y</Text></View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.name}>You</Text>
-            <Text style={styles.meta}>Toronto · Supporter</Text>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>{(person?.name ?? email ?? 'Y').charAt(0).toUpperCase()}</Text>
           </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.name} numberOfLines={1}>{person?.name ?? email ?? 'Guest'}</Text>
+            <Text style={styles.meta}>{session ? `Toronto · ${roleLabel}` : 'Not logged in'}</Text>
+          </View>
+          {session ? (
+            <Pressable onPress={signOut} style={styles.authBtn}>
+              <Text style={styles.authBtnText}>Log out</Text>
+            </Pressable>
+          ) : (
+            <Pressable onPress={() => router.push('/login')} style={[styles.authBtn, styles.authBtnPrimary]}>
+              <Text style={[styles.authBtnText, { color: '#fff' }]}>Log in</Text>
+            </Pressable>
+          )}
         </Card>
+
+        {session && person?.status === 'pending' && (
+          <Card style={{ backgroundColor: colors.amberSoft }}>
+            <Text style={{ color: colors.amber, fontWeight: '600' }}>Your application is being reviewed.</Text>
+          </Card>
+        )}
 
         <View style={styles.stats}>
           <Card style={styles.stat}>
@@ -66,6 +88,9 @@ export default function Profile() {
 const styles = StyleSheet.create({
   scroll: { padding: 20, gap: 14 },
   h1: { fontSize: 32, fontWeight: '800', color: colors.text, letterSpacing: -0.8 },
+  authBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 99, borderWidth: 1, borderColor: colors.faint },
+  authBtnPrimary: { backgroundColor: colors.primary, borderColor: colors.primary },
+  authBtnText: { fontSize: 14, fontWeight: '700', color: colors.text },
   me: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   avatar: { width: 56, height: 56, borderRadius: 28, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
   avatarText: { color: '#fff', fontSize: 24, fontWeight: '700' },

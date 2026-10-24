@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Animated, StyleSheet, Text, View, type ViewStyle } from 'react-native'
+import { Animated, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { colors, radius, shadow } from '@/theme'
 import { MAX_SUPPORTERS, type Person } from '@/data'
@@ -74,7 +74,7 @@ export function VoiceNote() {
   )
 }
 
-export function Card({ children, style }: { children: React.ReactNode; style?: ViewStyle }) {
+export function Card({ children, style }: { children: React.ReactNode; style?: StyleProp<ViewStyle> }) {
   return <View style={[styles.card, style]}>{children}</View>
 }
 

@@ -3,6 +3,7 @@ import { Tabs } from 'expo-router'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { colors } from '@/theme'
 import { useStore } from '@/store'
+import { useAuth } from '@/auth'
 
 type IconName = React.ComponentProps<typeof Ionicons>['name']
 
@@ -13,6 +14,7 @@ const icon = (name: IconName) =>
 
 export default function TabLayout() {
   const { supporting } = useStore()
+  const { canPost } = useAuth()
 
   return (
     <Tabs
@@ -32,6 +34,10 @@ export default function TabLayout() {
           tabBarBadge: supporting.length > 0 ? supporting.length : undefined,
           tabBarBadgeStyle: { backgroundColor: colors.primary },
         }}
+      />
+      <Tabs.Screen
+        name="journey"
+        options={{ title: 'My Journey', tabBarIcon: icon('sparkles'), href: canPost ? undefined : null }}
       />
       <Tabs.Screen name="activity" options={{ title: 'Activity', tabBarIcon: icon('notifications') }} />
       <Tabs.Screen name="profile" options={{ title: 'Profile', tabBarIcon: icon('person-circle') }} />

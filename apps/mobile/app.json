@@ -33,8 +33,20 @@
         }
       ],
       "expo-font",
-      "expo-audio",
-      "expo-asset"
+      "expo-asset",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Washomeless uses the microphone so you can record voice updates for your supporters."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Washomeless lets you choose photos to share as updates with your supporters.",
+          "cameraPermission": "Washomeless uses the camera so you can take photos for your updates."
+        }
+      ]
     ],
     "scheme": "washomeless",
     "experiments": {
