@@ -5,8 +5,8 @@ import { router, useLocalSearchParams } from 'expo-router'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { useStore } from '@/store'
 import { colors } from '@/theme'
-import { MAX_SUPPORTERS } from '@/data'
-import { Avatar, Card, DonorDots, ExampleTag, SectionTitle } from '@/components/ui'
+import { MAX_SUPPORTERS, UPDATES_PER_WEEK } from '@/data'
+import { Avatar, Card, DonorDots, ExampleTag, SectionTitle, VoiceNote } from '@/components/ui'
 
 export default function PersonScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -64,14 +64,18 @@ export default function PersonScreen() {
             ))}
           </Card>
 
-          <SectionTitle>Diary</SectionTitle>
+          <SectionTitle>Diary · posts {UPDATES_PER_WEEK}× a week</SectionTitle>
           {person.updates.map((u) => (
-            <Card key={u.title} style={{ gap: 6 }}>
+            <Card key={u.title} style={{ gap: 8 }}>
               <View style={styles.between}>
                 <Text style={styles.stepTitle}>{u.title}</Text>
                 <Text style={styles.meta}>{u.when}</Text>
               </View>
-              <Text style={styles.story}>{u.content}</Text>
+              {u.kind === 'voice' && <VoiceNote />}
+              <Text style={styles.story}>
+                {u.kind === 'voice' && <Text style={styles.meta}>Transcript: </Text>}
+                {u.content}
+              </Text>
             </Card>
           ))}
         </View>

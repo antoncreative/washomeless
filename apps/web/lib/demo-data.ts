@@ -9,7 +9,7 @@ export function isDemoId(id: string) {
   return id.startsWith(DEMO_ID_PREFIX)
 }
 
-const now = new Date('2026-10-01T12:00:00Z').getTime()
+const now = Date.now()
 const daysAgo = (d: number) => new Date(now - d * 86_400_000).toISOString()
 
 export const demoPeople: SponsoredPerson[] = [
@@ -104,9 +104,10 @@ export function getDemoMilestones(personId: string): Milestone[] {
   }))
 }
 
-const updatesByPerson: Record<string, { title: string; content: string; days: number }[]> = {
+const updatesByPerson: Record<string, { title: string; content: string; days: number; kind?: DiaryUpdate['kind'] }[]> = {
   'example-marcus': [
     {
+      kind: 'voice',
       title: 'Trial shift went great',
       content:
         'Did a trial shift at a bistro on Queen East today. Chef said my knife work is still sharp. They want me back Friday. I haven’t felt this good in two years.',
@@ -129,6 +130,7 @@ const updatesByPerson: Record<string, { title: string; content: string; days: nu
   ],
   'example-daniel': [
     {
+      kind: 'voice',
       title: 'First week of the pre-apprenticeship',
       content:
         'Five days, five on-time arrivals. Learned conduit bending today. My hands hurt but it’s the good kind of tired.',
@@ -152,6 +154,8 @@ export function getDemoUpdates(personId: string): DiaryUpdate[] {
     title: u.title,
     content: u.content,
     image_url: null,
+    kind: u.kind ?? 'text',
+    audio_url: null,
     created_at: daysAgo(u.days),
   }))
 }

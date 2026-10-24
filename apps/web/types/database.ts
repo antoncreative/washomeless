@@ -115,14 +115,18 @@ export type Database = {
           title: string
           content: string
           image_url: string | null
+          kind: 'text' | 'photo' | 'voice'
+          audio_url: string | null
           created_at: string
         }
         Insert: {
           id?: string
           person_id: string
           title: string
-          content: string
+          content?: string
           image_url?: string | null
+          kind?: 'text' | 'photo' | 'voice'
+          audio_url?: string | null
           created_at?: string
         }
         Update: {
@@ -131,6 +135,8 @@ export type Database = {
           title?: string
           content?: string
           image_url?: string | null
+          kind?: 'text' | 'photo' | 'voice'
+          audio_url?: string | null
         }
         Relationships: []
       }

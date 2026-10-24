@@ -2,7 +2,7 @@
 // Mirrors apps/web/lib/demo-data.ts so the app and site tell the same story.
 
 export type Milestone = { title: string; description: string; completed: boolean; when?: string }
-export type Update = { title: string; content: string; when: string }
+export type Update = { kind: 'text' | 'photo' | 'voice'; title: string; content: string; when: string }
 
 export type Person = {
   id: string
@@ -44,8 +44,8 @@ export const people: Person[] = [
     colors: ['#34d399', '#0d9488'],
     milestones: milestones(3),
     updates: [
-      { title: 'Trial shift went great', content: 'Did a trial shift at a bistro on Queen East today. Chef said my knife work is still sharp. They want me back Friday.', when: '2 days ago' },
-      { title: 'Got my keys', content: 'Moved into a room near Broadview. Slept eight hours straight for the first time since I can remember. Thank you, all of you.', when: '2 months ago' },
+      { kind: 'voice', title: 'Trial shift went great', content: 'Did a trial shift at a bistro on Queen East today. Chef said my knife work is still sharp. They want me back Friday.', when: '2 days ago' },
+      { kind: 'text', title: 'Got my keys', content: 'Moved into a room near Broadview. Slept eight hours straight for the first time since I can remember. Thank you, all of you.', when: '2 months ago' },
     ],
   },
   {
@@ -60,7 +60,7 @@ export const people: Person[] = [
     colors: ['#fbbf24', '#f97316'],
     milestones: milestones(2),
     updates: [
-      { title: 'Bridging program accepted', content: 'I was accepted into the pharmacy technician bridging program starting in January. The kids made me a card.', when: '5 days ago' },
+      { kind: 'text', title: 'Bridging program accepted', content: 'I was accepted into the pharmacy technician bridging program starting in January. The kids made me a card.', when: '5 days ago' },
     ],
   },
   {
@@ -75,7 +75,7 @@ export const people: Person[] = [
     colors: ['#60a5fa', '#6366f1'],
     milestones: milestones(1),
     updates: [
-      { title: 'First week done', content: 'Five days, five on-time arrivals. Learned conduit bending today. My hands hurt but it’s the good kind of tired.', when: 'Yesterday' },
+      { kind: 'voice', title: 'First week done', content: 'Five days, five on-time arrivals. Learned conduit bending today. My hands hurt but it’s the good kind of tired.', when: 'Yesterday' },
     ],
   },
   {
@@ -90,7 +90,7 @@ export const people: Person[] = [
     colors: ['#f472b6', '#a855f7'],
     milestones: milestones(4),
     updates: [
-      { title: 'Three clients now', content: 'A bakery, a hair salon, and a small moving company. Month 10 and I can see the finish line.', when: '10 days ago' },
+      { kind: 'text', title: 'Three clients now', content: 'A bakery, a hair salon, and a small moving company. Month 10 and I can see the finish line.', when: '10 days ago' },
     ],
   },
 ]
@@ -103,6 +103,9 @@ export const budget = [
   { label: 'Caseworker', amount: 250, color: '#0ea5e9' },
   { label: 'Transit & phone', amount: 200, color: '#818cf8' },
 ]
+
+// Sponsored people are asked for this many updates a week — text, photo or voice.
+export const UPDATES_PER_WEEK = 2
 
 export const MAX_SUPPORTERS = 100
 export const MONTHLY = 30

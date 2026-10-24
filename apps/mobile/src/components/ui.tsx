@@ -59,6 +59,21 @@ export function DonorDots({ filled, highlight }: { filled: number; highlight?: n
   )
 }
 
+// Static waveform for example voice notes (no audio file behind them).
+export function VoiceNote() {
+  return (
+    <View style={styles.voice}>
+      <View style={styles.voiceIcon}><Text style={{ color: '#fff', fontSize: 14 }}>🎙</Text></View>
+      <View style={styles.wave}>
+        {Array.from({ length: 28 }, (_, i) => (
+          <View key={i} style={[styles.bar, { height: `${30 + Math.abs(Math.sin(i * 1.7)) * 70}%` }]} />
+        ))}
+      </View>
+      <Text style={styles.voiceLabel}>0:42</Text>
+    </View>
+  )
+}
+
 export function Card({ children, style }: { children: React.ReactNode; style?: ViewStyle }) {
   return <View style={[styles.card, style]}>{children}</View>
 }
@@ -81,6 +96,11 @@ const styles = StyleSheet.create({
   dot: { flex: 1, aspectRatio: 1, borderRadius: '50%', backgroundColor: colors.faint },
   dotFilled: { backgroundColor: '#6ee7b7' },
   dotMine: { backgroundColor: colors.primaryDark, transform: [{ scale: 1.25 }] },
+  voice: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: colors.primarySoft, borderRadius: 99, paddingHorizontal: 10, paddingVertical: 8 },
+  voiceIcon: { width: 30, height: 30, borderRadius: 15, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
+  wave: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 2, height: 22 },
+  bar: { flex: 1, borderRadius: 2, backgroundColor: '#34d399' },
+  voiceLabel: { fontSize: 12, color: colors.primaryDark, fontWeight: '600' },
   card: { backgroundColor: colors.card, borderRadius: radius.md, padding: 16, ...shadow },
   tag: { alignSelf: 'flex-start', backgroundColor: colors.amberSoft, borderRadius: 99, paddingHorizontal: 8, paddingVertical: 2 },
   tagText: { color: colors.amber, fontSize: 9, fontWeight: '700', letterSpacing: 0.6 },

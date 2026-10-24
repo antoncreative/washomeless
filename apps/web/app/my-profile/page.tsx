@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import SupporterProgress from '@/components/SupporterProgress'
 import DiaryUpdate from '@/components/DiaryUpdate'
 import MilestoneTimeline from '@/components/MilestoneTimeline'
+import { UPDATES_PER_WEEK, updatesThisWeek } from '@/lib/updates'
 
 export default async function MyProfilePage() {
   const supabase = await createClient()
@@ -49,6 +50,9 @@ export default async function MyProfilePage() {
       .eq('person_id', person.id)
       .order('sort_order'),
   ])
+
+  const postedThisWeek = updatesThisWeek(updates ?? [])
+  const weeklyDone = postedThisWeek >= UPDATES_PER_WEEK
 
   const statusColors: Record<string, string> = {
     active: 'bg-emerald-100 text-emerald-800',
@@ -107,6 +111,34 @@ export default async function MyProfilePage() {
         </div>
 
         <div className="space-y-6">
+          {/* Weekly update goal */}
+          {person.status === 'active' && (
+            <div className={`border rounded-xl p-5 ${weeklyDone ? 'bg-emerald-50 border-emerald-200' : 'bg-white'}`}>
+              <h3 className="font-semibold mb-1">This week&apos;s updates</h3>
+              <p className="text-sm text-gray-500 mb-4">
+                Goal: {UPDATES_PER_WEEK} per week — text, photo or voice all count.
+              </p>
+              <div className="flex gap-2 mb-3">
+                {Array.from({ length: UPDATES_PER_WEEK }, (_, i) => (
+                  <div
+                    key={i}
+                    className={`h-2 flex-1 rounded-full ${i < postedThisWeek ? 'bg-emerald-500' : 'bg-gray-200'}`}
+                  />
+                ))}
+              </div>
+              <p className="text-sm font-medium text-gray-800">
+                {weeklyDone
+                  ? `Done for this week 🎉 ${postedThisWeek} posted`
+                  : `${postedThisWeek} of ${UPDATES_PER_WEEK} posted`}
+              </p>
+              {!weeklyDone && (
+                <Link href="/my-profile/updates/new" className="mt-3 inline-block text-sm font-medium text-emerald-700 hover:underline">
+                  Post a quick update →
+                </Link>
+              )}
+            </div>
+          )}
+
           {/* Progress */}
           {person.status === 'active' && (
             <div className="bg-white border rounded-xl p-5">

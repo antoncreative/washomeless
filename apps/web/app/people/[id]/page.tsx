@@ -6,6 +6,7 @@ import SupporterProgress from '@/components/SupporterProgress'
 import SubscribeButton from '@/components/SubscribeButton'
 import DiaryUpdate from '@/components/DiaryUpdate'
 import MilestoneTimeline from '@/components/MilestoneTimeline'
+import { timeAgo } from '@/lib/updates'
 import { isDemoId, getDemoPerson, getDemoMilestones, getDemoUpdates } from '@/lib/demo-data'
 
 export const revalidate = 30
@@ -120,6 +121,11 @@ function ProfileView({
             <div>
               <h1 className="text-2xl font-bold text-gray-900">{person.name}</h1>
               <p className="text-gray-500">{person.city}</p>
+              {updates.length > 0 && (
+                <p className="text-xs text-emerald-700 mt-1">
+                  Last update {timeAgo(updates[0].created_at)} · {updates.length} update{updates.length === 1 ? '' : 's'}
+                </p>
+              )}
             </div>
           </div>
 
