@@ -1,10 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
+import type { SponsoredPerson, Milestone, DiaryUpdate as DiaryUpdateRow } from '@/types/database'
 import { notFound } from 'next/navigation'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import SupporterProgress from '@/components/SupporterProgress'
 import SubscribeButton from '@/components/SubscribeButton'
 import DiaryUpdate from '@/components/DiaryUpdate'
 import MilestoneTimeline from '@/components/MilestoneTimeline'
+import { isDemoId, getDemoPerson, getDemoMilestones, getDemoUpdates } from '@/lib/demo-data'
 
 export const revalidate = 30
 
@@ -13,6 +15,19 @@ interface Props {
 }
 
 export default async function PersonProfilePage({ params }: Props) {
+  if (isDemoId(params.id)) {
+    const person = getDemoPerson(params.id)
+    if (!person) notFound()
+    return (
+      <ProfileView
+        person={person}
+        updates={getDemoUpdates(person.id)}
+        milestones={getDemoMilestones(person.id)}
+        isExample
+      />
+    )
+  }
+
   const supabase = await createClient()
 
   const [
@@ -42,8 +57,6 @@ export default async function PersonProfilePage({ params }: Props) {
 
   if (!person) notFound()
 
-  const isFull = person.current_supporters >= person.max_supporters
-
   // Check if already supporting
   let alreadySupporting = false
   if (user) {
@@ -58,15 +71,49 @@ export default async function PersonProfilePage({ params }: Props) {
   }
 
   return (
+    <ProfileView
+      person={person}
+      updates={updates ?? []}
+      milestones={milestones ?? []}
+      alreadySupporting={alreadySupporting}
+      isAuthenticated={!!user}
+    />
+  )
+}
+
+function ProfileView({
+  person,
+  updates,
+  milestones,
+  alreadySupporting = false,
+  isAuthenticated = false,
+  isExample = false,
+}: {
+  person: SponsoredPerson
+  updates: DiaryUpdateRow[]
+  milestones: Milestone[]
+  alreadySupporting?: boolean
+  isAuthenticated?: boolean
+  isExample?: boolean
+}) {
+  const isFull = person.current_supporters >= person.max_supporters
+
+  return (
     <div className="max-w-5xl mx-auto px-4 py-8 sm:py-12">
       <div className="grid lg:grid-cols-3 gap-10">
         {/* Main content */}
         <div className="lg:col-span-2 space-y-8">
+          {isExample && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              This is an example profile showing how Washomeless works — not a real person.
+            </div>
+          )}
+
           {/* Profile header */}
           <div className="flex items-start gap-4">
             <Avatar className="h-20 w-20">
               <AvatarImage src={person.avatar_url ?? undefined} />
-              <AvatarFallback className="bg-emerald-100 text-emerald-700 text-2xl font-bold">
+              <AvatarFallback className="bg-gradient-to-br from-emerald-400 to-teal-600 text-white text-2xl font-bold">
                 {person.name.charAt(0)}
               </AvatarFallback>
             </Avatar>
@@ -129,7 +176,11 @@ export default async function PersonProfilePage({ params }: Props) {
               </div>
             </div>
 
-            {alreadySupporting ? (
+            {isExample ? (
+              <div className="text-center py-3 px-4 bg-amber-50 rounded-lg text-sm text-amber-800">
+                Example profile — support opens when real profiles launch.
+              </div>
+            ) : alreadySupporting ? (
               <div className="text-center py-3 px-4 bg-emerald-50 rounded-lg text-sm text-emerald-700 font-medium">
                 You are supporting {person.name}
               </div>
@@ -137,7 +188,7 @@ export default async function PersonProfilePage({ params }: Props) {
               <SubscribeButton
                 personId={person.id}
                 isFull={isFull}
-                isAuthenticated={!!user}
+                isAuthenticated={isAuthenticated}
               />
             )}
           </div>

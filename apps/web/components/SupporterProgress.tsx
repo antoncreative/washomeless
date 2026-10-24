@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Progress } from '@/components/ui/progress'
 import type { SponsoredPerson } from '@/types/database'
+import { isDemoId } from '@/lib/demo-data'
 
 interface Props {
   person: SponsoredPerson
@@ -16,6 +17,8 @@ export default function SupporterProgress({ person }: Props) {
   const spotsLeft = max - current
 
   useEffect(() => {
+    if (isDemoId(person.id)) return
+
     const supabase = createClient()
 
     const channel = supabase
