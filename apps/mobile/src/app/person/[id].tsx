@@ -73,7 +73,7 @@ export default function PersonScreen() {
                 <Text style={styles.stepTitle}>{u.title}</Text>
                 <Text style={styles.meta}>{u.when}</Text>
               </View>
-              <UpdateMedia kind={u.kind} imageUrl={u.imageUrl} audioUrl={u.audioUrl} />
+              <UpdateMedia kind={u.kind} imageUrl={u.imageUrl} audioUrl={u.audioUrl} accent={person.colors} />
               {!!u.content && <Text style={styles.story}>
                 {u.kind === 'voice' && !u.audioUrl && <Text style={styles.meta}>Transcript: </Text>}
                 {u.content}
