@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { UPDATE_PROMPTS } from '@/lib/updates'
+import VoicePlayer from '@/components/VoicePlayer'
 
 type Kind = 'text' | 'photo' | 'voice'
 
@@ -239,7 +240,9 @@ export default function NewUpdatePage() {
               <div className="rounded-xl border p-6 flex flex-col items-center gap-4">
                 {audioPreview ? (
                   <>
-                    <audio src={audioPreview} controls className="w-full" />
+                    <div className="w-full">
+                      <VoicePlayer src={audioPreview} />
+                    </div>
                     <Button type="button" variant="outline" size="sm" onClick={resetRecording}>
                       <RotateCcw className="h-4 w-4 mr-1" /> Record again
                     </Button>

@@ -1,5 +1,6 @@
 import { Type, Camera, Mic } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import VoicePlayer from '@/components/VoicePlayer'
 import type { DiaryUpdate as DiaryUpdateType } from '@/types/database'
 
 const kindMeta = {
@@ -39,23 +40,25 @@ export default function DiaryUpdate({ update }: { update: DiaryUpdateType }) {
           />
         )}
         {update.audio_url && (
-          <audio src={update.audio_url} controls preload="metadata" className="w-full mb-3" />
+          <div className="mb-3">
+            <VoicePlayer src={update.audio_url} seed={update.id} />
+          </div>
         )}
         {update.kind === 'voice' && !update.audio_url && (
-          <div className="mb-3 flex items-center gap-3 rounded-full bg-emerald-50 px-4 py-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-white">
-              <Mic className="h-4 w-4" />
+          <div className="mb-3 flex items-center gap-4 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 p-4 text-white">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/90 text-teal-700">
+              <Mic className="h-5 w-5" />
             </span>
-            <div className="flex flex-1 items-center gap-0.5 h-6" aria-hidden>
-              {Array.from({ length: 36 }, (_, i) => (
+            <div className="flex flex-1 items-center gap-[2px] h-9" aria-hidden>
+              {Array.from({ length: 48 }, (_, i) => (
                 <span
                   key={i}
-                  className="flex-1 rounded-full bg-emerald-400"
-                  style={{ height: `${30 + Math.abs(Math.sin(i * 1.7)) * 70}%` }}
+                  className="flex-1 rounded-full bg-white/45"
+                  style={{ height: `${20 + Math.abs(Math.sin(i * 1.7) * Math.sin((Math.PI * (i + 1)) / 49)) * 80}%` }}
                 />
               ))}
             </div>
-            <span className="text-xs text-emerald-800">Example</span>
+            <span className="shrink-0 rounded-full bg-white/20 px-2.5 py-1 text-xs font-bold">Example</span>
           </div>
         )}
         {update.content && (
