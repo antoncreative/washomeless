@@ -8,6 +8,7 @@ import SupporterProgress from '@/components/SupporterProgress'
 import DiaryUpdate from '@/components/DiaryUpdate'
 import MilestoneTimeline from '@/components/MilestoneTimeline'
 import { UPDATES_PER_WEEK, updatesThisWeek } from '@/lib/updates'
+import { withSignedMedia } from '@/lib/media'
 
 export default async function MyProfilePage() {
   const supabase = await createClient()
@@ -38,7 +39,7 @@ export default async function MyProfilePage() {
     )
   }
 
-  const [{ data: updates }, { data: milestones }] = await Promise.all([
+  const [{ data: ownUpdates }, { data: milestones }] = await Promise.all([
     supabase
       .from('diary_updates')
       .select('*')
@@ -51,6 +52,7 @@ export default async function MyProfilePage() {
       .order('sort_order'),
   ])
 
+  const updates = await withSignedMedia(supabase, ownUpdates ?? [])
   const postedThisWeek = updatesThisWeek(updates ?? [])
   const weeklyDone = postedThisWeek >= UPDATES_PER_WEEK
 

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import DiaryUpdate from '@/components/DiaryUpdate'
+import { withSignedMedia } from '@/lib/media'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -29,7 +30,7 @@ export default async function DashboardPage() {
     ?.filter((s) => s.status === 'active')
     .map((s) => s.person_id) ?? []
 
-  const { data: recentUpdates } = personIds.length > 0
+  const { data: rawUpdates } = personIds.length > 0
     ? await supabase
         .from('diary_updates')
         .select('*')
@@ -37,6 +38,8 @@ export default async function DashboardPage() {
         .order('created_at', { ascending: false })
         .limit(10)
     : { data: [] }
+
+  const recentUpdates = await withSignedMedia(supabase, rawUpdates ?? [])
 
   const activeCount = subscriptions?.filter((s) => s.status === 'active').length ?? 0
 

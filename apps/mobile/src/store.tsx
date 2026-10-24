@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { AppState } from 'react-native'
 import { people as examplePeople, type Person } from './data'
 import { fetchLive, type LiveData } from './live'
+import { useAuth } from './auth'
 
 export type Activity = { id: string; icon: string; title: string; body: string; when: string; personId?: string }
 
@@ -46,6 +47,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setRefreshing(false)
     }
   }, [])
+
+  // What you can read depends on who's logged in, so reload when that changes.
+  const { session } = useAuth()
+  const userId = session?.user.id
+  useEffect(() => {
+    refresh()
+  }, [userId, refresh])
 
   // Load on start, every few seconds, and whenever the app comes back to the foreground.
   useEffect(() => {

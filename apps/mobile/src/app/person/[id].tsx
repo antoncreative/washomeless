@@ -66,7 +66,15 @@ export default function PersonScreen() {
           </Card>
 
           <SectionTitle>Diary · posts {UPDATES_PER_WEEK}× a week</SectionTitle>
-          {person.updates.length === 0 && <Text style={styles.meta}>No updates yet.</Text>}
+          {person.updates.length === 0 && !person.locked?.length && <Text style={styles.meta}>No updates yet.</Text>}
+          {!!person.locked?.length && (
+            <View style={styles.lockBanner}>
+              <Ionicons name="lock-closed" size={16} color={colors.primaryDark} />
+              <Text style={styles.lockBannerText}>
+                {person.name.split(' ')[0]}&apos;s voice notes, photos and diary are shared only with their circle.
+              </Text>
+            </View>
+          )}
           {person.updates.map((u, i) => (
             <Card key={`${u.title}-${i}`} style={{ gap: 8 }}>
               <View style={styles.between}>
@@ -78,6 +86,21 @@ export default function PersonScreen() {
                 {u.kind === 'voice' && !u.audioUrl && <Text style={styles.meta}>Transcript: </Text>}
                 {u.content}
               </Text>}
+            </Card>
+          ))}
+          {person.locked?.map((t) => (
+            <Card key={t.id} style={{ gap: 8 }}>
+              <View style={styles.between}>
+                <Text style={styles.stepTitle}>{t.title}</Text>
+                <Text style={styles.meta}>{t.when}</Text>
+              </View>
+              <View style={styles.locked}>
+                <Ionicons name={t.kind === 'voice' ? 'mic' : t.kind === 'photo' ? 'image' : 'document-text'} size={18} color={colors.muted} />
+                <Text style={styles.lockedText}>
+                  {t.kind === 'voice' ? 'Voice note' : t.kind === 'photo' ? 'Photo' : 'Diary entry'} · for supporters only
+                </Text>
+                <Ionicons name="lock-closed" size={16} color={colors.muted} />
+              </View>
             </Card>
           ))}
         </View>
@@ -121,6 +144,10 @@ const styles = StyleSheet.create({
   stepDone: { backgroundColor: colors.primary },
   stepLine: { width: 2, flex: 1, backgroundColor: colors.faint, marginVertical: 2 },
   stepTitle: { fontSize: 15, fontWeight: '700', color: colors.text },
+  lockBanner: { flexDirection: 'row', gap: 10, alignItems: 'center', backgroundColor: colors.primarySoft, borderRadius: 14, padding: 12 },
+  lockBannerText: { flex: 1, fontSize: 13, color: colors.primaryDark, lineHeight: 18 },
+  locked: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: colors.bg, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 14 },
+  lockedText: { flex: 1, fontSize: 14, color: colors.muted },
   footer: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 20, paddingTop: 12, backgroundColor: 'rgba(246,247,245,0.96)' },
   cta: { backgroundColor: colors.primary, borderRadius: 99, paddingVertical: 17, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 8, marginBottom: 8 },
   ctaDone: { backgroundColor: colors.primarySoft },

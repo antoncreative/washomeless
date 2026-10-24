@@ -1,11 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
-import type { SponsoredPerson, Milestone, DiaryUpdate as DiaryUpdateRow } from '@/types/database'
+import type { SponsoredPerson, Milestone, DiaryUpdate as DiaryUpdateRow, UpdateTeaser } from '@/types/database'
 import { notFound } from 'next/navigation'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import SupporterProgress from '@/components/SupporterProgress'
 import SubscribeButton from '@/components/SubscribeButton'
 import DiaryUpdate from '@/components/DiaryUpdate'
 import MilestoneTimeline from '@/components/MilestoneTimeline'
+import LockedUpdate from '@/components/LockedUpdate'
+import { withSignedMedia } from '@/lib/media'
 import { timeAgo } from '@/lib/updates'
 import { isDemoId, getDemoPerson, getDemoMilestones, getDemoUpdates } from '@/lib/demo-data'
 
@@ -36,6 +38,7 @@ export default async function PersonProfilePage({ params }: Props) {
     { data: updates },
     { data: milestones },
     { data: { user } },
+    { data: teasers },
   ] = await Promise.all([
     supabase
       .from('sponsored_people')
@@ -54,6 +57,8 @@ export default async function PersonProfilePage({ params }: Props) {
       .eq('person_id', params.id)
       .order('sort_order'),
     supabase.auth.getUser(),
+    // Everyone sees what was posted and when; full updates are only readable by the circle (RLS).
+    supabase.rpc('update_teasers', { p_person_id: params.id }),
   ])
 
   if (!person) notFound()
@@ -74,7 +79,8 @@ export default async function PersonProfilePage({ params }: Props) {
   return (
     <ProfileView
       person={person}
-      updates={updates ?? []}
+      updates={await withSignedMedia(supabase, updates ?? [])}
+      teasers={teasers ?? []}
       milestones={milestones ?? []}
       alreadySupporting={alreadySupporting}
       isAuthenticated={!!user}
@@ -85,6 +91,7 @@ export default async function PersonProfilePage({ params }: Props) {
 function ProfileView({
   person,
   updates,
+  teasers = [],
   milestones,
   alreadySupporting = false,
   isAuthenticated = false,
@@ -92,12 +99,18 @@ function ProfileView({
 }: {
   person: SponsoredPerson
   updates: DiaryUpdateRow[]
+  teasers?: UpdateTeaser[]
   milestones: Milestone[]
   alreadySupporting?: boolean
   isAuthenticated?: boolean
   isExample?: boolean
 }) {
   const isFull = person.current_supporters >= person.max_supporters
+  const readable = new Set(updates.map((u) => u.id))
+  const locked = teasers.filter((t) => !readable.has(t.id))
+  const totalUpdates = updates.length + locked.length
+  const lastPostedAt = [updates[0]?.created_at, locked[0]?.created_at].filter(Boolean).sort().pop()
+  const firstName = person.name.split(' ')[0]
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 sm:py-12">
@@ -121,9 +134,9 @@ function ProfileView({
             <div>
               <h1 className="text-2xl font-bold text-gray-900">{person.name}</h1>
               <p className="text-gray-500">{person.city}</p>
-              {updates.length > 0 && (
+              {lastPostedAt && (
                 <p className="text-xs text-emerald-700 mt-1">
-                  Last update {timeAgo(updates[0].created_at)} · {updates.length} update{updates.length === 1 ? '' : 's'}
+                  Last update {timeAgo(lastPostedAt)} · {totalUpdates} update{totalUpdates === 1 ? '' : 's'}
                 </p>
               )}
             </div>
@@ -144,18 +157,27 @@ function ProfileView({
           )}
 
           {/* Diary updates */}
-          {updates && updates.length > 0 && (
+          {totalUpdates > 0 && (
             <div>
               <h2 className="text-lg font-semibold mb-4">Updates</h2>
+              {locked.length > 0 && (
+                <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+                  🔒 {firstName}&apos;s photos, voice notes and diary are shared only with their circle of supporters.
+                  {isAuthenticated ? ` Join ${firstName}'s circle to see them.` : ' Join the circle (or log in) to see them.'}
+                </div>
+              )}
               <div className="space-y-4">
                 {updates.map((update) => (
                   <DiaryUpdate key={update.id} update={update} />
+                ))}
+                {locked.map((teaser) => (
+                  <LockedUpdate key={teaser.id} teaser={teaser} />
                 ))}
               </div>
             </div>
           )}
 
-          {(!updates || updates.length === 0) && (
+          {totalUpdates === 0 && (
             <div className="text-center py-10 text-gray-400 text-sm">
               No updates yet — check back soon.
             </div>

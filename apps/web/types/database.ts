@@ -180,6 +180,17 @@ export type Database = {
         Returns: boolean
         SetofOptions?: undefined
       }
+      update_teasers: {
+        Args: { p_person_id?: string }
+        Returns: {
+          id: string
+          person_id: string
+          kind: 'text' | 'photo' | 'voice'
+          title: string
+          created_at: string
+        }[]
+        SetofOptions?: undefined
+      }
     }
     Enums: Record<string, never>
   }
@@ -190,3 +201,4 @@ export type SponsoredPerson = Database['public']['Tables']['sponsored_people']['
 export type Subscription = Database['public']['Tables']['subscriptions']['Row']
 export type DiaryUpdate = Database['public']['Tables']['diary_updates']['Row']
 export type Milestone = Database['public']['Tables']['milestones']['Row']
+export type UpdateTeaser = Database['public']['Functions']['update_teasers']['Returns'][number]

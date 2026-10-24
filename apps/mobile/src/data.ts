@@ -4,6 +4,7 @@
 
 export type Milestone = { title: string; description: string; completed: boolean; when?: string }
 export type Update = {
+  id?: string
   kind: 'text' | 'photo' | 'voice'
   title: string
   content: string
@@ -12,6 +13,9 @@ export type Update = {
   audioUrl?: string | null
   createdAt?: string
 }
+
+// What everyone can see about an update they can't open: type, headline and when.
+export type Teaser = { id: string; kind: Update['kind']; title: string; when: string; createdAt: string }
 
 export type Person = {
   id: string
@@ -25,6 +29,8 @@ export type Person = {
   colors: [string, string]
   milestones: Milestone[]
   updates: Update[]
+  // Updates this viewer isn't allowed to open (not in the circle yet)
+  locked?: Teaser[]
 }
 
 const steps = [

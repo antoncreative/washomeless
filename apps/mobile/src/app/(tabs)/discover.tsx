@@ -3,8 +3,10 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Link } from 'expo-router'
 import { useStore } from '@/store'
 import { colors } from '@/theme'
-import { MAX_SUPPORTERS, budget } from '@/data'
+import { MAX_SUPPORTERS, budget, type Person } from '@/data'
 import { Avatar, Card, ExampleTag, ProgressBar, SectionTitle } from '@/components/ui'
+
+const updateCount = (p: Person) => p.updates.length + (p.locked?.length ?? 0)
 
 export default function Discover() {
   const { people, isLive, refreshing, refresh } = useStore()
@@ -56,7 +58,7 @@ export default function Discover() {
                   <Text style={styles.headline}>{p.headline}</Text>
                   <ProgressBar value={p.supporters} />
                   <View style={[styles.row, { marginTop: 8, justifyContent: 'space-between' }]}>
-                    {p.isExample ? <ExampleTag /> : <Text style={styles.meta}>{p.updates.length} {p.updates.length === 1 ? 'update' : 'updates'}</Text>}
+                    {p.isExample ? <ExampleTag /> : <Text style={styles.meta}>{updateCount(p)} {updateCount(p) === 1 ? 'update' : 'updates'}</Text>}
                     <Text style={styles.meta}>{p.supporters}/100 supporters</Text>
                   </View>
                 </Card>

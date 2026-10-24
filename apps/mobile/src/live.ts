@@ -1,10 +1,11 @@
-import type { Milestone, Person, Update } from './data'
+import type { Milestone, Person, Teaser, Update } from './data'
+import { MEDIA_BUCKET, supabase } from './supabase'
 
-// Reads public data from the same Supabase project as washomeless.com.
-// Uses the public anon key over the REST API — the same access any website visitor has.
+// Reads from the same Supabase project as washomeless.com, as the logged-in user (or anonymously).
+// Full updates are only returned for people whose circle you're in (or your own); everyone else
+// gets teasers — type, headline and date. Media files are private, so we fetch signed URLs.
 
-const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL
-const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY
+const SIGNED_URL_SECONDS = 60 * 60
 
 type PersonRow = {
   id: string
@@ -22,6 +23,14 @@ type UpdateRow = {
   content: string
   image_url: string | null
   audio_url: string | null
+  created_at: string
+}
+
+type TeaserRow = {
+  id: string
+  person_id: string
+  kind: Update['kind'] | null
+  title: string
   created_at: string
 }
 
@@ -66,26 +75,55 @@ function firstSentence(text: string) {
   return sentence.length > 80 ? `${sentence.slice(0, 77)}…` : sentence
 }
 
-async function get<T>(path: string): Promise<T> {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-    headers: { apikey: SUPABASE_ANON_KEY!, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
-  })
-  if (!res.ok) throw new Error(`Supabase ${res.status}`)
-  return res.json() as Promise<T>
+function mediaPath(url: string | null) {
+  if (!url) return null
+  const marker = `/${MEDIA_BUCKET}/`
+  const i = url.indexOf(marker)
+  return i === -1 ? null : decodeURIComponent(url.slice(i + marker.length).split('?')[0])
 }
 
-export type LiveData = { people: Person[]; latest: (Update & { personId: string; id: string; createdAt: string })[] }
+async function signMedia(updates: UpdateRow[]) {
+  const paths = Array.from(
+    new Set(updates.flatMap((u) => [mediaPath(u.image_url), mediaPath(u.audio_url)]).filter((p): p is string => !!p))
+  )
+  if (paths.length === 0) return updates
+  const { data } = await supabase.storage.from(MEDIA_BUCKET).createSignedUrls(paths, SIGNED_URL_SECONDS)
+  const signed = new Map((data ?? []).filter((d) => d.signedUrl).map((d) => [d.path, d.signedUrl]))
+  const sign = (url: string | null) => {
+    const path = mediaPath(url)
+    return path ? signed.get(path) ?? null : url
+  }
+  return updates.map((u) => ({ ...u, image_url: sign(u.image_url), audio_url: sign(u.audio_url) }))
+}
+
+async function rows<T>(query: PromiseLike<{ data: T[] | null; error: { message: string } | null }>) {
+  const { data, error } = await query
+  if (error) throw new Error(error.message)
+  return data ?? []
+}
+
+export type LiveData = { people: Person[]; latest: (Teaser & { personId: string })[] }
 
 export async function fetchLive(): Promise<LiveData> {
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) throw new Error('Supabase is not configured')
-
-  const [rows, updates, milestones] = await Promise.all([
-    get<PersonRow[]>('sponsored_people?status=eq.active&select=id,name,city,story,current_supporters&order=created_at.desc'),
-    get<UpdateRow[]>('diary_updates?select=id,person_id,kind,title,content,image_url,audio_url,created_at&order=created_at.desc&limit=200'),
-    get<MilestoneRow[]>('milestones?select=person_id,title,description,completed,completed_at,sort_order&order=sort_order'),
+  const [peopleRows, readable, milestones, teaserRows] = await Promise.all([
+    rows<PersonRow>(
+      supabase.from('sponsored_people').select('id,name,city,story,current_supporters').eq('status', 'active').order('created_at', { ascending: false })
+    ),
+    rows<UpdateRow>(
+      supabase.from('diary_updates').select('id,person_id,kind,title,content,image_url,audio_url,created_at').order('created_at', { ascending: false }).limit(200)
+    ),
+    rows<MilestoneRow>(
+      supabase.from('milestones').select('person_id,title,description,completed,completed_at,sort_order').order('sort_order')
+    ),
+    rows<TeaserRow>(supabase.rpc('update_teasers')),
   ])
+  const updates = await signMedia(readable)
+  const readableIds = new Set(updates.map((u) => u.id))
+
+  const toTeaser = (t: TeaserRow): Teaser => ({ id: t.id, kind: t.kind ?? 'text', title: t.title, when: timeAgo(t.created_at), createdAt: t.created_at })
 
   const toUpdate = (u: UpdateRow): Update => ({
+    id: u.id,
     kind: u.kind ?? 'text',
     title: u.title,
     content: u.content,
@@ -95,7 +133,7 @@ export async function fetchLive(): Promise<LiveData> {
     createdAt: u.created_at,
   })
 
-  const people: Person[] = rows.map((p) => ({
+  const people: Person[] = peopleRows.map((p) => ({
     id: p.id,
     isExample: false,
     name: p.name,
@@ -115,13 +153,14 @@ export async function fetchLive(): Promise<LiveData> {
           : undefined,
       })),
     updates: updates.filter((u) => u.person_id === p.id).map(toUpdate),
+    locked: teaserRows.filter((t) => t.person_id === p.id && !readableIds.has(t.id)).map(toTeaser),
   }))
 
   const activeIds = new Set(people.map((p) => p.id))
-  const latest = updates
-    .filter((u) => activeIds.has(u.person_id))
+  const latest = teaserRows
+    .filter((t) => activeIds.has(t.person_id))
     .slice(0, 30)
-    .map((u) => ({ ...toUpdate(u), id: u.id, personId: u.person_id, createdAt: u.created_at }))
+    .map((t) => ({ ...toTeaser(t), personId: t.person_id }))
 
   return { people, latest }
 }
