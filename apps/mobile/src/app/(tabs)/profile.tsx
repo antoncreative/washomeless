@@ -55,7 +55,7 @@ export default function Profile() {
         </Card>
 
         <Pressable onPress={() => Linking.openURL(WEBSITE_URL)}>
-          <Text style={styles.link}>Visit washomeless on the web →</Text>
+          <Text style={styles.link}>Visit washomeless.com →</Text>
         </Pressable>
         <Text style={styles.version}>Washomeless demo · v1.0 · Toronto</Text>
       </ScrollView>

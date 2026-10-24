@@ -107,5 +107,4 @@ export const budget = [
 export const MAX_SUPPORTERS = 100
 export const MONTHLY = 30
 
-// TODO: set to the production Vercel URL
-export const WEBSITE_URL = 'https://washomeless.vercel.app'
+export const WEBSITE_URL = 'https://washomeless.com'
