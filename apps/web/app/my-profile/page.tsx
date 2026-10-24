@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import AvatarUpload from '@/components/AvatarUpload'
 import SupporterProgress from '@/components/SupporterProgress'
 import DiaryUpdate from '@/components/DiaryUpdate'
 import MilestoneTimeline from '@/components/MilestoneTimeline'
@@ -66,19 +66,18 @@ export default async function MyProfilePage() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-12">
       <div className="flex items-start justify-between mb-8">
-        <div className="flex items-center gap-4">
-          <Avatar className="h-16 w-16">
-            <AvatarImage src={person.avatar_url ?? undefined} />
-            <AvatarFallback className="bg-emerald-100 text-emerald-700 text-xl font-bold">
-              {person.name.charAt(0)}
-            </AvatarFallback>
-          </Avatar>
+        <div className="flex items-start gap-4">
+          <AvatarUpload name={person.name} avatarUrl={person.avatar_url} />
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{person.name}</h1>
             <p className="text-gray-500">{person.city}</p>
             <Badge className={`mt-1 ${statusColors[person.status]}`}>
               {person.status}
             </Badge>
+            <p className="mt-2 max-w-sm text-xs text-gray-500">
+              Your profile photo is public. It&apos;s optional — you can use a photo that doesn&apos;t show your
+              face, like your hands, a pet, or something you love.
+            </p>
           </div>
         </div>
         {person.status === 'active' && (

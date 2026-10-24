@@ -1,10 +1,18 @@
 import { useEffect, useRef } from 'react'
-import { Animated, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native'
+import { Animated, Image, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { colors, radius, shadow } from '@/theme'
 import { MAX_SUPPORTERS, type Person } from '@/data'
 
 export function Avatar({ person, size = 48 }: { person: Person; size?: number }) {
+  if (person.avatarUrl) {
+    return (
+      <Image
+        source={{ uri: person.avatarUrl }}
+        style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: colors.faint }}
+      />
+    )
+  }
   return (
     <LinearGradient
       colors={person.colors}

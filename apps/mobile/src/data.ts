@@ -21,6 +21,7 @@ export type Person = {
   id: string
   isExample: boolean
   name: string
+  avatarUrl?: string | null
   age?: number
   neighbourhood: string
   headline: string

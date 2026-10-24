@@ -10,6 +10,7 @@ const SIGNED_URL_SECONDS = 60 * 60
 type PersonRow = {
   id: string
   name: string
+  avatar_url: string | null
   city: string
   story: string
   current_supporters: number
@@ -107,7 +108,7 @@ export type LiveData = { people: Person[]; latest: (Teaser & { personId: string 
 export async function fetchLive(): Promise<LiveData> {
   const [peopleRows, readable, milestones, teaserRows] = await Promise.all([
     rows<PersonRow>(
-      supabase.from('sponsored_people').select('id,name,city,story,current_supporters').eq('status', 'active').order('created_at', { ascending: false })
+      supabase.from('sponsored_people').select('id,name,avatar_url,city,story,current_supporters').eq('status', 'active').order('created_at', { ascending: false })
     ),
     rows<UpdateRow>(
       supabase.from('diary_updates').select('id,person_id,kind,title,content,image_url,audio_url,created_at').order('created_at', { ascending: false }).limit(200)
@@ -137,6 +138,7 @@ export async function fetchLive(): Promise<LiveData> {
     id: p.id,
     isExample: false,
     name: p.name,
+    avatarUrl: p.avatar_url,
     neighbourhood: p.city.replace(/^Toronto\s*·\s*/, '') || 'Toronto',
     headline: firstSentence(p.story),
     story: p.story,

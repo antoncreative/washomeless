@@ -1,4 +1,7 @@
-import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { ActionSheetIOS, ActivityIndicator, Alert, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { useState } from 'react'
+import * as ImagePicker from 'expo-image-picker'
+import { setMyAvatar } from '@/supabase'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
 import Ionicons from '@expo/vector-icons/Ionicons'
@@ -19,11 +22,55 @@ function startOfWeek() {
 
 // The sponsored person's own space: weekly goal, posting, and their updates.
 export default function Journey() {
-  const { person: me } = useAuth()
+  const { session, person: me, reload } = useAuth()
   const { people, refreshing, refresh } = useStore()
   const person = people.find((p) => p.id === me?.id)
+  const [savingPhoto, setSavingPhoto] = useState(false)
 
   if (!me) return null
+
+  async function savePhoto(uri: string | null) {
+    setSavingPhoto(true)
+    try {
+      await setMyAvatar(session!.user.id, uri)
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+      await Promise.all([refresh(), reload()])
+    } catch (err) {
+      Alert.alert('Could not save photo', err instanceof Error ? err.message : 'Please try again.')
+    } finally {
+      setSavingPhoto(false)
+    }
+  }
+
+  async function pick(fromCamera: boolean) {
+    if (fromCamera) {
+      const permission = await ImagePicker.requestCameraPermissionsAsync()
+      if (!permission.granted) return Alert.alert('Camera needed', 'Please allow camera access in Settings.')
+    }
+    const options: ImagePicker.ImagePickerOptions = { mediaTypes: 'images', allowsEditing: true, aspect: [1, 1], quality: 0.6 }
+    const result = fromCamera ? await ImagePicker.launchCameraAsync(options) : await ImagePicker.launchImageLibraryAsync(options)
+    if (!result.canceled) savePhoto(result.assets[0].uri)
+  }
+
+  function changePhoto() {
+    const hasPhoto = !!person?.avatarUrl
+    const title = 'Profile photo'
+    const message = 'Your profile photo is public. It\u2019s optional — you can use a photo that doesn\u2019t show your face, like your hands, a pet, or something you love.'
+    const choices = ['Take photo', 'Choose photo', ...(hasPhoto ? ['Remove photo'] : []), 'Cancel']
+    const run = (i: number) => {
+      if (choices[i] === 'Take photo') pick(true)
+      if (choices[i] === 'Choose photo') pick(false)
+      if (choices[i] === 'Remove photo') savePhoto(null)
+    }
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        { title, message, options: choices, cancelButtonIndex: choices.length - 1, destructiveButtonIndex: hasPhoto ? 2 : undefined },
+        run
+      )
+    } else {
+      Alert.alert(title, message, choices.map((c, i) => ({ text: c, style: c === 'Cancel' ? 'cancel' : 'default', onPress: () => run(i) })))
+    }
+  }
 
   const updates = person?.updates ?? []
   const thisWeek = updates.filter((u) => u.createdAt && new Date(u.createdAt).getTime() >= startOfWeek()).length
@@ -36,8 +83,20 @@ export default function Journey() {
         contentContainerStyle={styles.scroll}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={colors.primary} />}
       >
-        <Text style={styles.hello}>Hi {first} 👋</Text>
-        <Text style={styles.h1}>My Journey</Text>
+        <View style={styles.headerRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.hello}>Hi {first} 👋</Text>
+            <Text style={styles.h1}>My Journey</Text>
+          </View>
+          {person && (
+            <Pressable onPress={changePhoto} disabled={savingPhoto} hitSlop={6}>
+              <Avatar person={person} size={64} />
+              <View style={styles.cameraBadge}>
+                {savingPhoto ? <ActivityIndicator size="small" color="#fff" /> : <Ionicons name="camera" size={14} color="#fff" />}
+              </View>
+            </Pressable>
+          )}
+        </View>
 
         <Card style={[styles.goal, done && styles.goalDone]}>
           <View style={styles.between}>
@@ -101,6 +160,8 @@ export default function Journey() {
 
 const styles = StyleSheet.create({
   scroll: { padding: 20, gap: 14, paddingBottom: 40 },
+  headerRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  cameraBadge: { position: 'absolute', right: -2, bottom: -2, width: 26, height: 26, borderRadius: 13, backgroundColor: colors.primary, borderWidth: 2, borderColor: '#fff', alignItems: 'center', justifyContent: 'center' },
   hello: { color: colors.muted, fontSize: 15 },
   h1: { fontSize: 32, fontWeight: '800', color: colors.text, letterSpacing: -0.8, marginBottom: 4 },
   between: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },

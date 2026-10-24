@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { SponsoredPerson } from '@/types/database'
 
 export default function ApproveRejectButtons({ person }: { person: SponsoredPerson }) {
-  const [loading, setLoading] = useState<'approve' | 'reject' | null>(null)
+  const [loading, setLoading] = useState<'approve' | 'reject' | 'photo' | null>(null)
   const router = useRouter()
   const supabase = createClient()
 
@@ -23,9 +23,26 @@ export default function ApproveRejectButtons({ person }: { person: SponsoredPers
     router.refresh()
   }
 
+  async function removePhoto() {
+    setLoading('photo')
+    await supabase
+      .from('sponsored_people')
+      .update({ avatar_url: null, updated_at: new Date().toISOString() })
+      .eq('id', person.id)
+    setLoading(null)
+    router.refresh()
+  }
+
+  const removePhotoButton = person.avatar_url && (
+    <Button size="sm" variant="outline" onClick={removePhoto} disabled={loading !== null}>
+      {loading === 'photo' ? 'Removing…' : 'Remove photo'}
+    </Button>
+  )
+
   if (person.status === 'pending') {
     return (
       <div className="flex gap-2 shrink-0">
+        {removePhotoButton}
         <Button
           size="sm"
           className="bg-emerald-600 hover:bg-emerald-700"
@@ -49,17 +66,20 @@ export default function ApproveRejectButtons({ person }: { person: SponsoredPers
 
   if (person.status === 'active') {
     return (
-      <Button
-        size="sm"
-        variant="outline"
-        className="text-red-600 border-red-200 hover:bg-red-50 shrink-0"
-        onClick={() => updateStatus('rejected')}
-        disabled={loading !== null}
-      >
-        {loading === 'reject' ? 'Revoking…' : 'Revoke'}
-      </Button>
+      <div className="flex gap-2 shrink-0">
+        {removePhotoButton}
+        <Button
+          size="sm"
+          variant="outline"
+          className="text-red-600 border-red-200 hover:bg-red-50"
+          onClick={() => updateStatus('rejected')}
+          disabled={loading !== null}
+        >
+          {loading === 'reject' ? 'Revoking…' : 'Revoke'}
+        </Button>
+      </div>
     )
   }
 
-  return null
+  return removePhotoButton || null
 }

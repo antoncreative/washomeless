@@ -180,6 +180,11 @@ export type Database = {
         Returns: boolean
         SetofOptions?: undefined
       }
+      set_my_avatar: {
+        Args: { p_url: string | null }
+        Returns: undefined
+        SetofOptions?: undefined
+      }
       update_teasers: {
         Args: { p_person_id?: string }
         Returns: {
