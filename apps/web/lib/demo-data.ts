@@ -5,6 +5,13 @@ import type { SponsoredPerson, Milestone, DiaryUpdate } from '@/types/database'
 
 export const DEMO_ID_PREFIX = 'example-'
 
+// Examples keep the site looking complete until there are enough real people.
+export const MIN_REAL_PEOPLE = 3
+
+export function withExamples<T extends { id: string }>(real: T[], examples: T[]) {
+  return real.length >= MIN_REAL_PEOPLE ? real : [...real, ...examples]
+}
+
 export function isDemoId(id: string) {
   return id.startsWith(DEMO_ID_PREFIX)
 }

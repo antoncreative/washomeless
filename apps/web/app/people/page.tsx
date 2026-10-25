@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import PersonCard from '@/components/PersonCard'
-import { demoPeople } from '@/lib/demo-data'
+import { demoPeople, isDemoId, withExamples } from '@/lib/demo-data'
 
 export const revalidate = 60
 
@@ -13,8 +13,8 @@ export default async function PeoplePage() {
     .eq('status', 'active')
     .order('current_supporters', { ascending: false })
 
-  const showingExamples = !people || people.length === 0
-  const list = showingExamples ? demoPeople : people
+  const list = withExamples(people ?? [], demoPeople)
+  const showingExamples = list.some((p) => isDemoId(p.id))
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
@@ -27,7 +27,7 @@ export default async function PeoplePage() {
 
       {showingExamples && (
         <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          These are example profiles showing how Washomeless works. Real, verified profiles are coming soon.
+          Profiles marked &ldquo;Example profile&rdquo; are illustrations showing how Washomeless works — not real people.
         </div>
       )}
 

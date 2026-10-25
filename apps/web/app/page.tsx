@@ -18,7 +18,7 @@ import { createClient } from '@/lib/supabase/server'
 import PersonCard from '@/components/PersonCard'
 import DonorGrid from '@/components/landing/DonorGrid'
 import ImpactCalculator from '@/components/landing/ImpactCalculator'
-import { demoPeople } from '@/lib/demo-data'
+import { demoPeople, isDemoId, withExamples } from '@/lib/demo-data'
 
 // Example monthly budget for one person — 100 donors × $30
 const budget = [
@@ -71,8 +71,9 @@ export default async function HomePage() {
     .order('created_at', { ascending: false })
     .limit(3)
 
-  const showingExamples = !featuredPeople || featuredPeople.length === 0
-  const people = showingExamples ? demoPeople.slice(0, 3) : featuredPeople
+  const people = withExamples(featuredPeople ?? [], demoPeople).slice(0, 3)
+  const showingExamples = people.some((p) => isDemoId(p.id))
+  const onlyExamples = people.every((p) => isDemoId(p.id))
 
   return (
     <div className="overflow-x-hidden">
@@ -213,12 +214,14 @@ export default async function HomePage() {
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
             <div>
               <p className="text-sm font-semibold uppercase tracking-wider text-emerald-600 mb-2">
-                {showingExamples ? 'Example profiles' : 'People to support'}
+                {onlyExamples ? 'Example profiles' : 'People to support'}
               </p>
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">Meet the people</h2>
               {showingExamples && (
                 <p className="text-gray-600 mt-2 text-sm">
-                  Illustrative examples of how profiles look — real, verified profiles are coming soon.
+                  {onlyExamples
+                    ? 'Illustrative examples of how profiles look — real, verified profiles are coming soon.'
+                    : 'Profiles marked “Example profile” are illustrations of how Washomeless works.'}
                 </p>
               )}
             </div>

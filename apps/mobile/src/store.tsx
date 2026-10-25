@@ -7,6 +7,7 @@ import { useAuth } from './auth'
 export type Activity = { id: string; icon: string; title: string; body: string; when: string; personId?: string }
 
 const REFRESH_MS = 15_000
+const MIN_REAL_PEOPLE = 3
 
 const exampleActivity: Activity[] = [
   { id: 'a1', icon: '🎉', title: 'Milestone reached', body: 'Marcus landed a trial shift at a bistro on Queen East.', when: '2d', personId: 'marcus' },
@@ -67,7 +68,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [refresh])
 
   const isLive = !!live && live.people.length > 0
-  const basePeople = isLive ? live.people : examplePeople
+  // Keep examples alongside real people until there are enough of them (same rule as the website).
+  const basePeople = isLive
+    ? live.people.length >= MIN_REAL_PEOPLE
+      ? live.people
+      : [...live.people, ...examplePeople]
+    : examplePeople
 
   // Joining a circle is still a demo action: bump the count locally.
   const people = useMemo(
@@ -86,7 +92,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       when: u.when,
       personId: u.personId,
     }))
-    return [...joined, ...fromUpdates]
+    const examples = live.people.length < MIN_REAL_PEOPLE ? exampleActivity : []
+    return [...joined, ...fromUpdates, ...examples]
   }, [isLive, live, joined])
 
   const support = useCallback(
