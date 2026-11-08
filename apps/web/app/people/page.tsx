@@ -1,17 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
+import { supabaseEnabled } from '@/lib/supabase/config'
 import PersonCard from '@/components/PersonCard'
 import { demoPeople, isDemoId, withExamples } from '@/lib/demo-data'
 
 export const revalidate = 60
 
 export default async function PeoplePage() {
-  const supabase = await createClient()
-
-  const { data: people } = await supabase
-    .from('sponsored_people')
-    .select('*')
-    .eq('status', 'active')
-    .order('current_supporters', { ascending: false })
+  const people = supabaseEnabled ? await getActivePeople() : []
 
   const list = withExamples(people ?? [], demoPeople)
   const showingExamples = list.some((p) => isDemoId(p.id))
@@ -38,4 +33,14 @@ export default async function PeoplePage() {
       </div>
     </div>
   )
+}
+
+async function getActivePeople() {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('sponsored_people')
+    .select('*')
+    .eq('status', 'active')
+    .order('current_supporters', { ascending: false })
+  return data
 }

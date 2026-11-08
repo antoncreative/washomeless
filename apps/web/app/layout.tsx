@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { createClient } from '@/lib/supabase/server'
+import { supabaseEnabled } from '@/lib/supabase/config'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
@@ -23,11 +24,11 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const supabase = supabaseEnabled ? await createClient() : null
+  const user = supabase ? (await supabase.auth.getUser()).data.user : null
 
   let profile = null
-  if (user) {
+  if (supabase && user) {
     const { data } = await supabase
       .from('profiles')
       .select('role')
@@ -49,7 +50,7 @@ export default async function RootLayout({
               <Link href="/people" className="hidden sm:block text-sm text-gray-600 hover:text-gray-900">
                 Meet people
               </Link>
-              {profile?.role !== 'admin' && profile?.role !== 'sponsored' && (
+              {supabaseEnabled && profile?.role !== 'admin' && profile?.role !== 'sponsored' && (
                 <Link href="/apply" className="hidden sm:block text-sm text-gray-600 hover:text-gray-900">
                   Apply for help
                 </Link>
@@ -79,9 +80,11 @@ export default async function RootLayout({
                 </>
               ) : (
                 <>
-                  <Link href="/auth/login" className="text-sm text-gray-600 hover:text-gray-900">
-                    Log in
-                  </Link>
+                  {supabaseEnabled && (
+                    <Link href="/auth/login" className="text-sm text-gray-600 hover:text-gray-900">
+                      Log in
+                    </Link>
+                  )}
                   <Link href="/people">
                     <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 rounded-full text-xs sm:text-sm px-3 sm:px-5">
                       Support someone

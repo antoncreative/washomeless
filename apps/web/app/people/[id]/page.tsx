@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { supabaseEnabled } from '@/lib/supabase/config'
 import type { SponsoredPerson, Milestone, DiaryUpdate as DiaryUpdateRow, UpdateTeaser } from '@/types/database'
 import { notFound } from 'next/navigation'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -30,6 +31,8 @@ export default async function PersonProfilePage({ params }: Props) {
       />
     )
   }
+
+  if (!supabaseEnabled) notFound()
 
   const supabase = await createClient()
 

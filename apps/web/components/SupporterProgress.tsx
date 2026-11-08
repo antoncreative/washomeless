@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { supabaseEnabled } from '@/lib/supabase/config'
 import { Progress } from '@/components/ui/progress'
 import type { SponsoredPerson } from '@/types/database'
 import { isDemoId } from '@/lib/demo-data'
@@ -17,7 +18,7 @@ export default function SupporterProgress({ person }: Props) {
   const spotsLeft = max - current
 
   useEffect(() => {
-    if (isDemoId(person.id)) return
+    if (!supabaseEnabled || isDemoId(person.id)) return
 
     const supabase = createClient()
 

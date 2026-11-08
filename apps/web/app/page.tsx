@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/server'
+import { supabaseEnabled } from '@/lib/supabase/config'
 import PersonCard from '@/components/PersonCard'
 import DonorGrid from '@/components/landing/DonorGrid'
 import ImpactCalculator from '@/components/landing/ImpactCalculator'
@@ -62,14 +63,7 @@ const faqs = [
 ]
 
 export default async function HomePage() {
-  const supabase = await createClient()
-
-  const { data: featuredPeople } = await supabase
-    .from('sponsored_people')
-    .select('*')
-    .eq('status', 'active')
-    .order('created_at', { ascending: false })
-    .limit(3)
+  const featuredPeople = supabaseEnabled ? await getFeaturedPeople() : []
 
   const people = withExamples(featuredPeople ?? [], demoPeople).slice(0, 3)
   const showingExamples = people.some((p) => isDemoId(p.id))
@@ -333,4 +327,15 @@ export default async function HomePage() {
       </section>
     </div>
   )
+}
+
+async function getFeaturedPeople() {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('sponsored_people')
+    .select('*')
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
+    .limit(3)
+  return data
 }

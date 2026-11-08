@@ -29,3 +29,6 @@ npm-debug.log*
 
 # Supabase CLI
 supabase/.temp/
+
+# Local data backups (contain personal data)
+backups/
