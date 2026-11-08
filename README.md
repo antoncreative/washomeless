@@ -79,6 +79,8 @@ npm install
 npx expo start --ios                                 # opens the iPhone simulator
 ```
 
+> **Supabase is currently off** (the site runs in offline mode with example profiles). To turn it back on, follow [docs/RESTORE_SUPABASE.md](docs/RESTORE_SUPABASE.md).
+
 **Database:** apply the SQL files in `supabase/migrations/` in order (`supabase db push`, or paste them into the Supabase SQL editor).
 
 ## Status
